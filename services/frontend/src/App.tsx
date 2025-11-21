@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Activity, CheckCircle, Clock, Link as LinkIcon, Send, XCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import './index.css';
 
 interface Job {
@@ -25,10 +25,10 @@ function App() {
             // setJobs(data);
 
             // Mock data for now since backend might not be running/connected in this env
-            // setJobs([
-            //   { id: '1', original_url: 'https://linkedin.com/jobs/view/123', title: 'Senior AI Engineer', company_name: 'DeepMind', status: 'applied', created_at: new Date().toISOString() },
-            //   { id: '2', original_url: 'https://indeed.com/view/456', title: 'Frontend Developer', company_name: 'Vercel', status: 'in_progress', created_at: new Date().toISOString() },
-            // ]);
+            setJobs([
+                { id: '1', original_url: 'https://linkedin.com/jobs/view/123', title: 'Senior AI Engineer', company_name: 'DeepMind', status: 'applied', created_at: new Date().toISOString() },
+                { id: '2', original_url: 'https://indeed.com/view/456', title: 'Frontend Developer', company_name: 'Vercel', status: 'in_progress', created_at: new Date().toISOString() },
+            ]);
         } catch (err) {
             console.error(err);
         }
@@ -40,7 +40,7 @@ function App() {
         return () => clearInterval(interval);
     }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!url) return;
         setLoading(true);
