@@ -12,7 +12,11 @@ bot.start((ctx) => {
 });
 
 bot.on('text', async (ctx) => {
-    const text = ctx.message.text;
+    const message = ctx.message;
+    if (!message || !('text' in message)) {
+        return;
+    }
+    const text = message.text;
 
     // Simple URL extraction regex
     const urlRegex = /(https?:\/\/[^\s]+)/g;
