@@ -11,7 +11,7 @@ class DeepApplyAgent:
         self.llm = ChatOpenAI(
             base_url='https://api.grok.x.ai/v1',
             api_key=os.getenv('GROK_API_KEY'),
-            model='grok-beta'
+            model=os.getenv('MODEL_NAME', 'grok-beta')
         )
 
     async def run(self, url: str):

@@ -19,7 +19,7 @@ function App() {
 
     const fetchJobs = async () => {
         try {
-            const res = await fetch('http://localhost:3000/jobs');
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/jobs`);
             const data = await res.json();
             setJobs(data);
         } catch (err) {
@@ -38,7 +38,7 @@ function App() {
         if (!url) return;
         setLoading(true);
         try {
-            const res = await fetch('http://localhost:3000/jobs/apply', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/jobs/apply`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url, source: 'webapp' })
