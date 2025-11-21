@@ -15,8 +15,9 @@ The system is currently configured to use the **Python Agent** (`services/agent`
     Ensure your `.env` file contains:
     ```bash
     GROK_API_KEY=your_key_here
-    OPENAI_API_KEY=your_key_here (optional, for backup/embeddings)
-    MODEL_NAME=grok-beta
+    OPENAI_API_KEY=your_key_here
+    AGENT_MODEL=grok-beta
+    EMBEDDING_MODEL=text-embedding-3-small
     POSTGRES_USER=postgres
     POSTGRES_PASSWORD=postgres
     POSTGRES_DB=deepapply
