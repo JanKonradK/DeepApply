@@ -19,16 +19,9 @@ function App() {
 
     const fetchJobs = async () => {
         try {
-            // In real app, this would be an API call
-            // const res = await fetch('http://localhost:3000/jobs');
-            // const data = await res.json();
-            // setJobs(data);
-
-            // Mock data for now since backend might not be running/connected in this env
-            setJobs([
-                { id: '1', original_url: 'https://linkedin.com/jobs/view/123', title: 'Senior AI Engineer', company_name: 'DeepMind', status: 'applied', created_at: new Date().toISOString() },
-                { id: '2', original_url: 'https://indeed.com/view/456', title: 'Frontend Developer', company_name: 'Vercel', status: 'in_progress', created_at: new Date().toISOString() },
-            ]);
+            const res = await fetch('http://localhost:3000/jobs');
+            const data = await res.json();
+            setJobs(data);
         } catch (err) {
             console.error(err);
         }

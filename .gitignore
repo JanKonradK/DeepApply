@@ -4,7 +4,8 @@ dist
 .DS_Store
 coverage
 .vscode
-profile_data
+profile_data/*
+!profile_data/bio.txt
 services/*/node_modules
 services/*/dist
 services/*/coverage

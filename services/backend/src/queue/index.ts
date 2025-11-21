@@ -7,8 +7,7 @@ const connection = {
 
 export const jobQueue = new Queue('job_application', { connection });
 
-// Worker will be initialized in the main entry point or a separate worker process
-// For now, we just export the setup function
+// Worker initialized in main entry point
 export const setupWorker = () => {
     const worker = new Worker('job_application', async (job: Job) => {
         console.log(`Processing job ${job.id} with data:`, job.data);

@@ -32,7 +32,7 @@ import jobRoutes from './routes/jobs';
 // Register routes
 fastify.register(jobRoutes);
 
-// Start worker (in the same process for simplicity in dev, usually separate)
+// Start worker
 setupWorker();
 
 // Start server
