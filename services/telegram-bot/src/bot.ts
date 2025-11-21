@@ -37,10 +37,10 @@ bot.on('text', async (ctx: Context) => {
             });
 
             const { jobId, status } = response.data;
-            ctx.reply(`✅ Job queued!\nID: ${jobId}\nStatus: ${status}`);
+            ctx.reply(`Job queued.\nID: ${jobId}\nStatus: ${status}`);
         } catch (error: any) {
             console.error('Error sending job to backend:', error.message);
-            ctx.reply(`❌ Failed to queue job: ${url}\nError: ${error.message}`);
+            ctx.reply(`Failed to queue job: ${url}\nError: ${error.message}`);
         }
     }
 });

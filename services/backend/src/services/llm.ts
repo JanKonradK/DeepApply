@@ -29,12 +29,10 @@ export async function generateAnswers(params: GenerateAnswersParams) {
     const userProfile = profileSnippets.join('\n\n');
 
     const prompt = `
-    You are DeepApply, an expert job application agent.
-
     Job Description:
     ${jobDescription}
 
-    User Profile (Retrieved Context):
+    User Profile:
     ${userProfile}
 
     Form Fields:
