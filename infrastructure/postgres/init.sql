@@ -31,11 +31,11 @@ CREATE TABLE IF NOT EXISTS jobs (
 -- Embeddings Table (for RAG)
 CREATE TABLE IF NOT EXISTS embeddings (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  owner_type  TEXT NOT NULL,    -- 'job', 'cv', 'profile_doc', 'project', 'skill'
-  owner_id    UUID,             -- Can be null if it's a global profile doc not linked to a specific entity table yet
-  chunk_index INT NOT NULL,
   content     TEXT NOT NULL,
-  embedding   vector(1536) NOT NULL -- Adjust dimensions based on model (OpenAI text-embedding-3-small is 1536)
+  embedding   vector(1536) NOT NULL, -- OpenAI text-embedding-3-small
+  source      TEXT,                  -- Filename or origin
+  metadata    JSONB,                 -- Extra info
+  created_at  TIMESTAMPTZ DEFAULT now()
 );
 
 -- CVs Table

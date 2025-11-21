@@ -1,6 +1,11 @@
+node_modules
+dist
 .env
-__pycache__/
-n8n_data/
-postgres_data/
-qdrant_data/
-*.pdf
+.DS_Store
+coverage
+.vscode
+profile_data
+services/*/node_modules
+services/*/dist
+services/*/coverage
+*.log
