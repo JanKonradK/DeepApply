@@ -54,23 +54,57 @@ services:
       - deepapply_net
     command: npm run dev
 
-  # 4. Browser Worker (Node/Playwright)
-  browser-worker:
-    build: ./services/browser-worker
-    container_name: deepapply_browser_worker
+  # 4. Agent Service (Python/Browser-Use)
+  agent:
+    build: ./services/agent
+    container_name: deepapply_agent
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - GROK_API_KEY=${GROK_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY} # Just in case
       - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-deepapply}
+      - QDRANT_URI=http://qdrant:6333
+    ports:
+      - "8000:8000"
     depends_on:
-      - redis
       - postgres
+      - redis
+      - qdrant
     volumes:
-      - ./services/browser-worker:/app
-      - /app/node_modules
+      - ./services/agent:/app
+      - ./knowledge_base/obsidian_vault:/app/vault
     networks:
       - deepapply_net
-    command: npm start
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Qdrant Vector DB
+  qdrant:
+    image: qdrant/qdrant
+    container_name: deepapply_qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - deepapply_net
+    restart: unless-stopped
+
+  # 4. Browser Worker (Node/Playwright) - DISABLED for A/B testing new Agent
+  # browser-worker:
+  #   build: ./services/browser-worker
+  #   container_name: deepapply_browser_worker
+  #   environment:
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #     - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-deepapply}
+  #   depends_on:
+  #     - redis
+  #     - postgres
+  #   volumes:
+  #     - ./services/browser-worker:/app
+  #     - /app/node_modules
+  #   networks:
+  #     - deepapply_net
+  #   command: npm start
 
   # 5. Frontend (React)
   frontend:
@@ -126,3 +160,4 @@ networks:
 volumes:
   postgres_data:
   redis_data:
+  qdrant_data:

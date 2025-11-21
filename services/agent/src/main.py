@@ -28,6 +28,17 @@ async def apply_to_job(job: JobRequest):
     result = await agent.run(job.url)
     return {"status": "success", "data": result}
 
+@app.post("/ingest")
+async def ingest_data():
+    """
+    Trigger ingestion of documents from the vault.
+    """
+    try:
+        kb.ingest_vault()
+        return {"status": "success", "message": "Ingestion complete"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/health")
 def health():
     return {"status": "active", "gpu": False}

@@ -1,0 +1,5 @@
+# Temporary Items and Technical Debt to Fix Later
+
+This file tracks temporary implementations, hardcoded values, and items that need refinement for a production-ready environment.
+
+- services/backend/src/services/llm.ts: Model name is hardcoded to 'grok-beta'. Should be configurable via environment variable.

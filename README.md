@@ -28,8 +28,9 @@ DeepApply is built as a set of microservices orchestrated by Docker Compose:
 
 -   **frontend**: React + TypeScript + Vite SPA for managing jobs and viewing status.
 -   **backend**: Node.js + Fastify API that acts as the orchestrator. It manages the job queue and integrates with the LLM.
--   **browser-worker**: A dedicated Node.js + Playwright worker that executes the browser automation tasks.
+-   **agent**: Python + FastAPI service using `browser-use` and `langchain` for autonomous job applications.
 -   **postgres**: The primary database, utilizing pgvector for storing text embeddings and relational data.
+-   **qdrant**: Vector database for the Agent's knowledge base.
 -   **redis**: Handles the job queues and inter-service messaging.
 -   **kdb**: A high-performance time-series database used as the Salary Oracle.
 -   **telegram-bot**: A simple interface to forward URLs from Telegram to the backend.
@@ -60,23 +61,27 @@ DeepApply is built as a set of microservices orchestrated by Docker Compose:
     ```
 
 3.  **Setup Profile Data**
-    Create a `profile_data` directory and add your personal documents (.txt or .md). The agent will use these to answer questions about you.
+    -   **For Backend (Postgres)**: Create `profile_data` directory and add your documents.
+    -   **For Agent (Qdrant)**: Add your documents to `knowledge_base/obsidian_vault`.
     ```bash
     mkdir profile_data
+    mkdir -p knowledge_base/obsidian_vault
     # Add your files, e.g., bio.txt, experience.md
     ```
 
 4.  **Ingest Data**
-    Generate embeddings for your profile data so the agent can search them.
-    ```bash
-    # Start Postgres first
-    docker-compose up -d postgres
-
-    # Run the ingestion script
-    cd services/backend
-    npm install
-    npm run ingest
-    ```
+    -   **Backend**:
+        ```bash
+        docker-compose up -d postgres
+        cd services/backend && npm install && npm run ingest
+        cd ../..
+        ```
+    -   **Agent**:
+        Start the services first, then trigger ingestion.
+        ```bash
+        docker-compose up -d
+        curl -X POST http://localhost:8000/ingest
+        ```
 
 5.  **Run the System**
     ```bash
