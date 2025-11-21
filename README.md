@@ -2,13 +2,13 @@
 
 **The Local-First, Autonomous AI Agent for Job Applications.**
 
-DeepApply is a powerful, Dockerized system designed to automate the tedious process of applying for jobs. It accepts job URLs, intelligently fills out applications using your personal profile data, and manages the entire lifecycle of your job search—all running locally on your machine for maximum privacy and control.
+DeepApply is a powerful, Dockerized system designed to automate the tedious process of applying for jobs. It accepts job URLs, intelligently fills out applications using your personal profile data, and manages the entire lifecycle of your job search; all running locally on your machine for maximum privacy and control.
 
 ---
 
 ## Powered by Grok 4.1 Fast (Reasoning)
 
-At the core of DeepApply is **Grok 4.1 Fast**, a state-of-the-art reasoning model. We selected this model for three critical reasons:
+At the core of DeepApply is **Grok 4.1 Fast**, a state-of-the-art reasoning model. I selected this model for three critical reasons:
 
 1.  **Superior Reasoning**: Unlike standard chat models, Grok 4.1 Fast excels at complex decision-making, allowing it to understand nuanced application questions and generate tailored, high-quality answers.
 2.  **Exceptional Tool Calling**: The model demonstrates incredible reliability in calling external tools. This is vital for DeepApply, which relies on the LLM to query the Salary Oracle, search your RAG vector database, and control browser actions precisely.
@@ -19,10 +19,10 @@ At the core of DeepApply is **Grok 4.1 Fast**, a state-of-the-art reasoning mode
 ## Key Features
 
 -   **Local-First Architecture**: Your data (CVs, personal info, application history) stays on your machine in a local PostgreSQL database.
--   **RAG (Retrieval-Augmented Generation)**: The agent "reads" your CV, bio, and project descriptions (stored as embeddings) to answer specific questions like "Describe a challenge you overcame."
+-   **RAG (Retrieval-Augmented Generation)**: The agent "reads" your CV, bio, and previous work experiences and education descriptions (stored as embeddings) to answer specific questions like "Describe a challenge you overcame." (I recommend writing extensively about your past)
 -   **Intelligent Form Filling**: Uses a headless browser (Playwright) with stealth plugins to navigate job sites, extract form schemas, and fill them out autonomously.
 -   **Salary Oracle**: A specialized **kdb+/q** microservice that provides quantitative salary estimations to ensure you don't lowball yourself in salary expectation fields.
--   **Multi-Platform Support**: Designed to handle various ATS platforms (Lever, Greenhouse, etc.) and job boards.
+-   **Multi-Platform Support**: Designed to handle various ATS platforms and job boards.
 -   **Telegram Integration**: Send job links directly to your agent via a Telegram bot for on-the-go application queuing.
 -   **Traceability**: Every action, answer, and form submission is logged. Screenshots are captured at key steps for verification.
 
@@ -101,7 +101,7 @@ DeepApply is built as a set of microservices orchestrated by Docker Compose:
     -   The job is queued.
     -   The **Browser Worker** launches a stealth browser.
     -   It scrapes the page and extracts the form fields.
-    -   **Grok 4.1** analyzes the form and your profile data to generate perfect answers.
+    -   **Grok 4.1 Fast** analyzes the form and your profile data to generate perfect answers.
     -   The worker fills the form and saves a screenshot (check `services/browser-worker/screenshots`).
 
 ---
