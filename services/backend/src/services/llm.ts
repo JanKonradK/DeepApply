@@ -45,7 +45,7 @@ export async function generateAnswers(params: GenerateAnswersParams) {
 
     try {
         const completion = await openai.chat.completions.create({
-            model: 'grok-beta',
+            model: process.env.MODEL_NAME || 'grok-beta',
             messages: [
                 { role: 'system', content: 'You are a helpful assistant.' },
                 { role: 'user', content: prompt }
