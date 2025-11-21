@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { Pool } from 'pg';
 import { jobQueue } from '../queue';
+import { generateAnswers } from '../services/llm';
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL
@@ -30,9 +31,9 @@ export default async function jobRoutes(fastify: FastifyInstance) {
         try {
             // 1. Insert into DB
             const res = await client.query(
-                `INSERT INTO jobs (original_url, canonical_url, source, source_platform, status)
-         VALUES ($1, $1, $2, 'unknown', 'queued')
-         RETURNING id`,
+                `INSERT INTO jobs(original_url, canonical_url, source, source_platform, status)
+                 VALUES($1, $1, $2, 'unknown', 'queued')
+                 RETURNING id`,
                 [url, source]
             );
             const jobId = res.rows[0].id;
@@ -46,6 +47,18 @@ export default async function jobRoutes(fastify: FastifyInstance) {
             return reply.code(500).send({ error: 'Internal Server Error' });
         } finally {
             client.release();
+        }
+    });
+
+    // POST /jobs/generate-answers
+    fastify.post<{ Body: { jobDescription: string; formFields: any[] } }>('/jobs/generate-answers', async (request, reply) => {
+        const { jobDescription, formFields } = request.body;
+        try {
+            const answers = await generateAnswers({ jobDescription, formFields });
+            return { answers };
+        } catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({ error: 'Failed to generate answers' });
         }
     });
 

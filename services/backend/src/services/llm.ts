@@ -8,6 +8,8 @@ const openai = new OpenAI({
     baseURL: 'https://api.grok.x.ai/v1' // Hypothetical URL, adjust as needed
 });
 
+import { searchProfile } from './rag';
+
 export interface GenerateAnswersParams {
     jobDescription: string;
     formFields: {
@@ -15,11 +17,16 @@ export interface GenerateAnswersParams {
         label: string;
         type: string;
     }[];
-    userProfile: string; // Retrieved from RAG
 }
 
 export async function generateAnswers(params: GenerateAnswersParams) {
-    const { jobDescription, formFields, userProfile } = params;
+    const { jobDescription, formFields } = params;
+
+    // 1. Retrieve relevant profile information
+    // We construct a query based on the job description and form fields
+    const query = `Job: ${jobDescription.substring(0, 200)}... Fields: ${formFields.map(f => f.label).join(', ')}`;
+    const profileSnippets = await searchProfile(query, 10);
+    const userProfile = profileSnippets.join('\n\n');
 
     const prompt = `
     You are DeepApply, an expert job application agent.
@@ -27,7 +34,7 @@ export async function generateAnswers(params: GenerateAnswersParams) {
     Job Description:
     ${jobDescription}
 
-    User Profile:
+    User Profile (Retrieved Context):
     ${userProfile}
 
     Form Fields:
@@ -52,7 +59,7 @@ export async function generateAnswers(params: GenerateAnswersParams) {
 
         const content = completion.choices[0].message.content;
         return JSON.parse(content || '{}');
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error generating answers:', error);
         return {};
     }

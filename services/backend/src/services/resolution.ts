@@ -28,7 +28,7 @@ export function resolveApplicationUrl(originalUrl: string): ResolvedApplicationS
     let urlObj: URL;
     try {
         urlObj = new URL(originalUrl);
-    } catch (e) {
+    } catch (e: any) {
         throw new Error('Invalid URL');
     }
 
