@@ -11,6 +11,29 @@ services/*/dist
 services/*/coverage
 *.log
 
+# Python
+venv/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+services/*/venv/
+services/*/__pycache__/
+*.egg-info/
+.eggs/
+*.egg
+
+# CUDA and GPU packages
+*.so
+*.so.*
+*.dylib
+*.dll
+*.cuda
+*.cubin
+*.fatbin
+*.ptx
+
 # Documentation (developer notes)
 #Fix_Later.md
 #IMPLEMENTATION_PLAN.md
@@ -18,3 +41,20 @@ services/*/coverage
 
 # Git housekeeping
 .git/gc.log
+
+# Build artifacts
+build/
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
