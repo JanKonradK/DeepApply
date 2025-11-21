@@ -1,17 +1,17 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
-import { Telegraf } from 'telegraf';
+import { Context, Telegraf } from 'telegraf';
 
 dotenv.config();
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN || '');
 const BACKEND_URL = process.env.BACKEND_URL || 'http://backend:3000';
 
-bot.start((ctx) => {
+bot.start((ctx: Context) => {
     ctx.reply('Welcome to DeepApply! Send me a job URL to get started.');
 });
 
-bot.on('text', async (ctx) => {
+bot.on('text', async (ctx: Context) => {
     const message = ctx.message;
     if (!message || !('text' in message)) {
         return;
@@ -33,7 +33,7 @@ bot.on('text', async (ctx) => {
             const response = await axios.post(`${BACKEND_URL}/jobs/apply`, {
                 url: url,
                 source: 'telegram',
-                notes: `Forwarded from Telegram user ${ctx.from.username || ctx.from.id}`
+                notes: `Forwarded from Telegram user ${ctx.from?.username || ctx.from?.id}`
             });
 
             const { jobId, status } = response.data;
@@ -47,7 +47,7 @@ bot.on('text', async (ctx) => {
 
 bot.launch().then(() => {
     console.log('Telegram bot started');
-}).catch((err) => {
+}).catch((err: Error) => {
     console.error('Failed to start bot', err);
 });
 
