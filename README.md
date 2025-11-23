@@ -37,12 +37,7 @@ The system follows a **Modular Monolith + Worker** pattern, ensuring separation 
     -   **Qdrant**: Vector similarity search engine.
 
 ### Vector Space Organization (`profile_data/`)
-Data is ingested into a hierarchical vector store to optimize semantic retrieval precision:
--   `CVs/`: High-priority biographical embeddings.
--   `Professional_Info/`: Chronological employment vectors.
--   `Academic_Info/`: Educational credential embeddings.
--   `Personal_Info/`: Unstructured semantic context.
--   `Other_Info/`: Auxiliary data points.
+Data is ingested into a hierarchical vector store to optimize semantic retrieval precision. See `profile_data/README.md` for schema details.
 
 ## 🚀 Deployment & Instantiation
 
