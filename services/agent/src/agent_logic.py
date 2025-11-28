@@ -2,7 +2,7 @@ import os
 from browser_use import Agent
 from langchain_openai import ChatOpenAI
 from .rag_engine import KnowledgeBase
-from .definitions import UserProfile, SYSTEM_PROMPT_TEMPLATE
+from .agent_prompts import SYSTEM_PROMPT_TEMPLATE
 
 class DeepApplyAgent:
     def __init__(self, kb: KnowledgeBase = None):
@@ -17,12 +17,22 @@ class DeepApplyAgent:
         )
         self.max_app_tokens = int(os.getenv('MAX_TOKENS_PER_APP', 7000))
 
-    async def run(self, url: str, user_profile: UserProfile):
+    async def run(self, url: str):
         print(f"Starting application process for: {url}")
+
+        # Retrieve user context from Knowledge Base (RAG)
+        # We fetch a comprehensive summary to give the agent enough context
+        context_query = "Full candidate profile including name, email, phone, skills, experience, and education."
+        retrieved_docs = self.kb.search_relevant_info(context_query, limit=5)
+        user_context = "\n---\n".join(retrieved_docs)
+
+        if not user_context:
+            print("⚠️ Warning: No profile context retrieved from RAG. Agent might hallucinate.")
+            user_context = "No specific user profile found. Please ask for details."
 
         # Construct the task with explicit context
         formatted_task = SYSTEM_PROMPT_TEMPLATE.format(
-            user_profile_json=user_profile.model_dump_json(indent=2),
+            user_context=user_context,
             target_url=url
         )
 

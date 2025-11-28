@@ -14,16 +14,7 @@ async function runIntegrationTest() {
     }
 
     try {
-        await agent.applyToJob({
-            url: 'https://example.com/job',
-            profile: {
-                full_name: 'Test User',
-                email: 'test@example.com',
-                phone: '+1234567890',
-                skills: ['Testing'],
-                salary_expectation: '100000'
-            }
-        });
+        await agent.applyToJob({ url: 'https://example.com/job' });
         console.log('✅ Agent call successful');
     } catch (e) {
         console.log('❌ Agent call failed (as expected without live agent)');

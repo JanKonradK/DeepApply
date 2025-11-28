@@ -15,12 +15,11 @@ AGENT_TOKENS = Counter('agent_tokens_total', 'Total tokens used', ['type']) # ty
 AGENT_COST = Counter('agent_cost_usd_total', 'Total cost in USD')
 AGENT_DURATION = Histogram('agent_duration_seconds', 'Time spent running the agent')
 
-from .definitions import UserProfile
+# from .agent_prompts import SYSTEM_PROMPT_TEMPLATE
 
 class JobRequest(BaseModel):
     url: str
     keywords: list[str] = []
-    profile: UserProfile
 
 @app.on_event("startup")
 async def startup_event():
@@ -49,7 +48,7 @@ async def apply_to_job(job: JobRequest):
     with AGENT_DURATION.time():
         try:
             agent = DeepApplyAgent(kb=kb)
-            result = await agent.run(job.url, job.profile)
+            result = await agent.run(job.url)
 
             # Record metrics
             if "tokens_input" in result:
