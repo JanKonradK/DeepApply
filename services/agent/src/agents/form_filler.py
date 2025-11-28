@@ -30,6 +30,10 @@ class FormFillerAgent(BaseAgent):
         INSTRUCTIONS:
         - Fill all required fields.
         - Upload CV if requested (use placeholder path '/app/cv.pdf').
+        - **OPEN-ENDED QUESTIONS**: For any text area asking "Why us?", "Cover Letter", or "Additional Info":
+          - You MUST write a detailed response.
+          - If there is a character limit (e.g., 500 chars), use ~90% of it (e.g., 450 chars).
+          - Do NOT be brief. Quality and depth are the priority.
         - If you encounter a 'Review' page, STOP and return the current state.
         - DO NOT SUBMIT unless explicitly told to (which we aren't doing yet).
         """
