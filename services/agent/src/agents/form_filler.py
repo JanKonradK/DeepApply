@@ -5,15 +5,9 @@ from ..utils.captcha_solver import CaptchaSolver
 from ..utils.telegram_notifier import TelegramNotifier
 import os
 
-# Add parent directory to path for utils
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from utils.captcha_solver import CaptchaSolver
-from utils.telegram_notifier import TelegramNotifier
-
 class FormFillerAgent(BaseAgent):
     """
-    Fills the application form using the generated artifacts.
-    Handles CAPTCHAs and notifies user on failures.
+    Fills application forms with CAPTCHA solving and human-in-the-loop fallback.
     """
     def __init__(self):
         super().__init__()
@@ -22,10 +16,10 @@ class FormFillerAgent(BaseAgent):
 
     async def run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         url = inputs.get("url")
-        user_profile = inputs.get("user_profile")
+        user_profile = inputs.get("user_profile", "")
         artifacts = inputs.get("artifacts", [])
 
-        # Extract CL/CV from artifacts if available
+        # Extract cover letter from artifacts
         cover_letter = artifacts[0] if len(artifacts) > 0 else ""
 
         print(f"🤖 FormFillerAgent: Filling form at {url}...")
@@ -37,27 +31,88 @@ class FormFillerAgent(BaseAgent):
         USER CONTEXT:
         {user_profile}
 
-        COVER LETTER CONTENT (Paste this if asked):
+        COVER LETTER CONTENT (Paste if requested):
         {cover_letter}
 
         INSTRUCTIONS:
-        - Fill all required fields.
-        - Upload CV if requested (use placeholder path '/app/cv.pdf').
-        - **OPEN-ENDED QUESTIONS**: For any text area asking "Why us?", "Cover Letter", or "Additional Info":
-          - You MUST write a detailed response.
-          - If there is a character limit (e.g., 500 chars), use ~90% of it (e.g., 450 chars).
-          - Do NOT be brief. Quality and depth are the priority.
+        - Fill all required fields using user context
+        - Upload CV from '/app/cv.pdf' if requested
+        - **OPEN-ENDED QUESTIONS**: Use ~90% of character limit
         - **CAPTCHA HANDLING**:
-          - If you encounter a CAPTCHA (reCAPTCHA, hCaptcha, or image challenge), PAUSE.
-          - Take a screenshot and return the element details.
-        - If you encounter a 'Review' page, STOP and return the current state.
-        - DO NOT SUBMIT unless explicitly told to (which we aren't doing yet).
+          - If you see a CAPTCHA, PAUSE and return "CAPTCHA_DETECTED"
+          - Include the CAPTCHA type (reCAPTCHA, hCaptcha, image)
+          - Include the site key if visible
+        - If you see a 'Review' page, STOP and return current state
+        - DO NOT SUBMIT unless explicitly instructed
         """
 
-        agent = Agent(task=task, llm=self.llm)
-            if reply and reply.lower() in ["retry", "fixed"]:
-                 return {"status": "retrying", "summary": "User fixed issue"}
-            else:
-                 return {"status": "failed", "summary": "Human intervention failed/timed out"}
+        try:
+            agent = Agent(task=task, llm=self.llm)
+            history = await agent.run()
+            result = history.final_result()
 
-        return {"status": "filled", "summary": result}
+            # Check for CAPTCHA
+            if "CAPTCHA_DETECTED" in result or "captcha" in result.lower():
+                print("🔐 CAPTCHA detected, attempting to solve...")
+
+                # Try to extract CAPTCHA info
+                captcha_solved = await self._handle_captcha(url, result)
+
+                if not captcha_solved:
+                    # Fallback to human
+                    print("⚠️ CAPTCHA solving failed, requesting human help...")
+                    response = await self.telegram.request_manual_intervention(
+                        issue_type="CAPTCHA blocking progress",
+                        screenshot_path=None,  # TODO: Get actual screenshot from browser
+                        timeout_seconds=300
+                    )
+
+                    if response["action"] == "continue":
+                        return {"status": "retrying", "summary": "User resolved CAPTCHA"}
+                    elif response["action"] == "skip":
+                        return {"status": "skipped", "summary": "User skipped application"}
+                    else:
+                        return {"status": "aborted", "summary": "User aborted"}
+
+                return {"status": "filled", "summary": "CAPTCHA solved, form filled"}
+
+            # Check for other errors
+            if "error" in result.lower() or "fail" in result.lower():
+                print("⚠️ Form filling encountered error...")
+                response = await self.telegram.request_manual_intervention(
+                    issue_type=f"Form filling error: {result[:100]}",
+                    screenshot_path=None,
+                    timeout_seconds=180
+                )
+
+                if response["action"] == "continue":
+                    return {"status": "manual_fix", "summary": result}
+                else:
+                    return {"status": "failed", "summary": result}
+
+            return {"status": "filled", "summary": result}
+
+        except Exception as e:
+            print(f"❌ FormFillerAgent error: {e}")
+            return {"status": "error", "summary": str(e)}
+
+    async def _handle_captcha(self, url: str, captcha_info: str) -> bool:
+        """
+        Attempt to solve CAPTCHA automatically.
+        Returns True if solved, False if failed.
+        """
+        # Try to extract site key (simplified - real implementation would parse DOM)
+        site_key = None
+        if "site-key" in captcha_info.lower():
+            # Extract site key from result string
+            pass
+
+        if site_key:
+            # Attempt reCAPTCHA solve
+            result = await self.captcha_solver.solve_recaptcha_v2(site_key, url)
+            if result and "token" not in str(result):
+                print(f"✅ CAPTCHA solved: {result[:50]}...")
+                return True
+
+        print("❌ Could not solve CAPTCHA automatically")
+        return False
