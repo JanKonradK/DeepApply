@@ -1,4 +1,3 @@
-```python
 from .base import BaseAgent
 from typing import Dict, Any
 from browser_use import Agent
@@ -63,4 +62,3 @@ class FormFillerAgent(BaseAgent):
                  return {"status": "failed", "summary": "Human intervention failed/timed out"}
 
         return {"status": "filled", "summary": result}
-```
