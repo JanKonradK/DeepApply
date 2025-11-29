@@ -1,111 +1,118 @@
 import os
-import asyncio
+import time
 import requests
-from typing import Dict, Any, Optional
+from typing import Optional, Dict, Any
 
 class CaptchaSolver:
     """
-    Handles CAPTCHA solving using the 2captcha API.
-    Supports reCAPTCHA v2/v3, hCaptcha, and image-based challenges.
+    Solves CAPTCHAs using 2captcha service with fallback logic.
     """
-    def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.getenv("TWOCAPTCHA_API_KEY")
-        self.base_url = "http://2captcha.com"
+    def __init__(self):
+        self.api_key = os.getenv('TWOCAPTCHA_API_KEY')
+        self.base_url = 'http://2captcha.com/in.php'
+        self.result_url = 'http://2captcha.com/res.php'
 
-    async def solve_recaptcha(self, site_key: str, url: str, version: str = "v2") -> Dict[str, Any]:
+    async def solve_recaptcha_v2(self, site_key: str, page_url: str) -> Optional[str]:
         """
-        Solves Google reCAPTCHA.
-        """
-        if not self.api_key:
-            return {"error": "Missing 2captcha API key"}
-
-        print(f"🧩 CaptchaSolver: Submitting reCAPTCHA {version}...")
-
-        # 1. Submit request
-        params = {
-            "key": self.api_key,
-            "method": "userrecaptcha",
-            "googlekey": site_key,
-            "pageurl": url,
-            "json": 1
-        }
-        if version == "v3":
-            params["version"] = "v3"
-            params["action"] = "verify" # Default action
-
-        try:
-            resp = requests.post(f"{self.base_url}/in.php", params=params)
-            request_id = resp.json().get("request")
-        except Exception as e:
-            return {"error": f"Submission failed: {str(e)}"}
-
-        if not request_id:
-             return {"error": f"Invalid response from 2captcha: {resp.text}"}
-
-        # 2. Poll for result
-        print(f"⏳ CaptchaSolver: Waiting for solution (ID: {request_id})...")
-        for _ in range(20): # Wait up to 100s
-            await asyncio.sleep(5)
-            try:
-                res_resp = requests.get(f"{self.base_url}/res.php", params={
-                    "key": self.api_key,
-                    "action": "get",
-                    "id": request_id,
-                    "json": 1
-                })
-                result = res_resp.json()
-
-                if result.get("status") == 1:
-                    print("✅ CaptchaSolver: Solved!")
-                    return {"token": result.get("request")}
-
-                if result.get("request") == "CAPCHA_NOT_READY":
-                    continue
-                else:
-                    return {"error": f"Solving failed: {result.get('request')}"}
-            except Exception as e:
-                print(f"⚠️ CaptchaSolver: Polling error: {e}")
-
-        return {"error": "Timeout waiting for CAPTCHA solution"}
-
-    async def solve_image(self, image_b64: str) -> Dict[str, Any]:
-        """
-        Solves normal image CAPTCHA (text in image).
+        Solves reCAPTCHA v2.
+        Returns the g-recaptcha-response token.
         """
         if not self.api_key:
-            return {"error": "Missing 2captcha API key"}
+            print("⚠️ 2captcha API key not found. Skipping automated solve.")
+            return None
 
-        print("🧩 CaptchaSolver: Submitting image CAPTCHA...")
+        print(f"🔐 Solving reCAPTCHA v2 for {page_url}...")
 
-        params = {
-            "key": self.api_key,
-            "method": "base64",
-            "body": image_b64,
-            "json": 1
+        # Submit CAPTCHA task
+        submit_params = {
+            'key': self.api_key,
+            'method': 'userrecaptcha',
+            'googlekey': site_key,
+            'pageurl': page_url,
+            'json': 1
         }
 
         try:
-            resp = requests.post(f"{self.base_url}/in.php", data=params)
-            request_id = resp.json().get("request")
+            submit_response = requests.post(self.base_url, data=submit_params, timeout=30)
+            submit_data = submit_response.json()
+
+            if submit_data.get('status') != 1:
+                print(f"❌ Failed to submit CAPTCHA: {submit_data.get('request')}")
+                return None
+
+            captcha_id = submit_data.get('request')
+            print(f"📝 CAPTCHA submitted. ID: {captcha_id}")
+
+            # Poll for result (max 120 seconds)
+            for attempt in range(24):  # 24 * 5s = 120s
+                time.sleep(5)
+                result_params = {
+                    'key': self.api_key,
+                    'action': 'get',
+                    'id': captcha_id,
+                    'json': 1
+                }
+
+                result_response = requests.get(self.result_url, params=result_params, timeout=30)
+                result_data = result_response.json()
+
+                if result_data.get('status') == 1:
+                    token = result_data.get('request')
+                    print(f"✅ CAPTCHA solved! Token: {token[:50]}...")
+                    return token
+                elif result_data.get('request') != 'CAPCHA_NOT_READY':
+                    print(f"❌ Error: {result_data.get('request')}")
+                    return None
+
+            print("⏱️ CAPTCHA solve timeout.")
+            return None
+
         except Exception as e:
-            return {"error": f"Submission failed: {str(e)}"}
+            print(f"❌ CAPTCHA solver error: {e}")
+            return None
 
-        if not request_id:
-             return {"error": f"Invalid response: {resp.text}"}
+    async def solve_image_captcha(self, image_base64: str) -> Optional[str]:
+        """
+        Solves image-based CAPTCHA (e.g., "select all traffic lights").
+        """
+        if not self.api_key:
+            return None
 
-        # Poll
-        for _ in range(10):
-            await asyncio.sleep(3)
-            res_resp = requests.get(f"{self.base_url}/res.php", params={
-                "key": self.api_key,
-                "action": "get",
-                "id": request_id,
-                "json": 1
-            })
-            result = res_resp.json()
-            if result.get("status") == 1:
-                return {"text": result.get("request")}
-            if result.get("request") != "CAPCHA_NOT_READY":
-                return {"error": result.get("request")}
+        print("🖼️ Solving image CAPTCHA...")
 
-        return {"error": "Timeout"}
+        submit_params = {
+            'key': self.api_key,
+            'method': 'base64',
+            'body': image_base64,
+            'json': 1
+        }
+
+        try:
+            submit_response = requests.post(self.base_url, data=submit_params, timeout=30)
+            submit_data = submit_response.json()
+
+            if submit_data.get('status') != 1:
+                return None
+
+            captcha_id = submit_data.get('request')
+
+            for attempt in range(12):  # 60 seconds
+                time.sleep(5)
+                result_params = {
+                    'key': self.api_key,
+                    'action': 'get',
+                    'id': captcha_id,
+                    'json': 1
+                }
+
+                result_response = requests.get(self.result_url, params=result_params, timeout=30)
+                result_data = result_response.json()
+
+                if result_data.get('status') == 1:
+                    return result_data.get('request')
+
+            return None
+
+        except Exception as e:
+            print(f"❌ Image CAPTCHA error: {e}")
+            return None
