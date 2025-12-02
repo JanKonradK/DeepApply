@@ -105,6 +105,15 @@ class EnhancedFormFiller(BaseAgent):
             history = await browser_agent.run()
             result = history.final_result()
 
+            if result is None:
+                logger.error("Browser agent returned None result")
+                return {
+                    "status": "error",
+                    "summary": "Browser agent failed to return a result (possible connection error)",
+                    "cover_letter_generated": cover_letter is not None,
+                    "effort_level": effort_level
+                }
+
             logger.info(f"Browser automation completed: {result[:100]}")
 
             # Try to parse JSON result
@@ -244,6 +253,17 @@ class EnhancedFormFiller(BaseAgent):
                 "- Be professional and concise",
                 "- STOP at review page - DO NOT SUBMIT",
             ])
+
+        task_parts.extend([
+            "",
+            "FIELD HANDLING INSTRUCTIONS:",
+            "1. Date Pickers: Try typing 'YYYY-MM-DD' first. If that fails, use the calendar widget.",
+            "2. File Uploads: Use the provided resume path for 'Resume' or 'CV' fields.",
+            "3. Dropdowns: Select the option that best matches the profile. If no match, choose 'Other'.",
+            "4. Radio/Checkboxes: Answer truthfully. For 'Sponsorship', answer 'No' unless profile says otherwise.",
+            "5. Phone Numbers: Use the provided format. Remove country code if a separate dropdown exists.",
+            "6. Address: If 'Auto-fill' is available, use it, otherwise fill manually.",
+        ])
 
         task_parts.extend([
             "",
