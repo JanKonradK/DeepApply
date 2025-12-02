@@ -1,38 +1,39 @@
-# Agent Service: Inference & Instrumentation
+# Agent Service
 
-This service is the autonomous worker responsible for executing complex browser interactions and performing semantic inference using Large Language Models (LLMs).
+The core intelligence of Nyx Venatrix. This service handles the entire lifecycle of a job application, from ingestion to submission.
 
-## 🔬 Core Technologies
+## Components
 
--   **Python 3.13**: Leveraging the latest performance improvements.
--   **Playwright**: Headless browser automation with stealth plugins for fingerprint normalization.
--   **LangChain**: Orchestration of LLM chains and tool usage.
--   **Qdrant**: Vector database for Retrieval-Augmented Generation (RAG).
--   **Prometheus**: Real-time metrics instrumentation.
+### `src/matching/`
+**Profile Matcher**: Uses OpenAI embeddings (`text-embedding-3-small`) to compute cosine similarity between your profile and job descriptions. Caches profile embeddings for performance.
 
-## 🧠 RAG Engine (`KnowledgeBase`)
+### `src/planning/`
+**Effort Planner**: Determines the appropriate effort level (Low, Medium, High) based on match scores and company tiers defined in `effort_policy.yml`.
 
-The agent utilizes a local-first RAG engine to retrieve context-aware data during execution.
+### `src/generation/`
+**Answer Generator**: Uses LLMs (Grok/GPT-4) to generate context-aware cover letters and answers to screening questions. Quality varies by effort level.
 
-### Prioritization Logic
-The engine prioritizes information sources based on their semantic authority:
-1.  **CVs** (Weight: 5.0): High-priority biographical data.
-2.  **Professional_Info** (Weight: 4.0): Employment history and references.
-3.  **Academic_Info** (Weight: 3.0): Educational credentials.
-4.  **Personal_Info** (Weight: 2.0): Bio and cover letter context.
-5.  **Other_Info** (Weight: 1.0): Auxiliary data.
+### `src/agents/`
+**Enhanced Form Filler**: A browser automation agent (using `browser-use`) that navigates job sites and fills forms. Includes stealth features like randomized delays and human-like typing.
 
-## 🛡️ Guardrails
+### `src/qa/`
+**QA Agent**: Validates all generated content against your `profile.json`. Checks for hallucinations (claiming skills you don't have) and consistency violations.
 
-To prevent runaway costs and infinite loops, the agent enforces strict token limits:
--   **`MAX_TOKENS_PER_QUESTION`**: Limits the output length of a single reasoning step.
--   **`MAX_TOKENS_PER_APP`**: Limits the total token budget for a single execution run.
+### `src/concurrency/`
+**Ray Worker Pool**: Manages parallel execution of applications using Ray actors. Supports up to 5 concurrent workers with isolated error handling.
 
-## 📊 Metrics
+### `src/observability/`
+**Trackers**: Integrations for MLflow (metrics/experiments) and Langfuse (LLM traces).
 
-The service exposes a `/metrics` endpoint scraping:
--   `agent_runs_total`: Counter of total executions.
--   `agent_errors_total`: Counter of failed runs.
--   `agent_tokens_total`: Counter of input/output tokens used.
--   `agent_cost_usd_total`: Estimated cost in USD.
--   `agent_duration_seconds`: Histogram of execution latency.
+### `src/session/`
+**Session Manager**: Handles batch execution of applications, tracking progress and generating digest summaries.
+
+## Running
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start API
+uvicorn src.main:app --reload
+```

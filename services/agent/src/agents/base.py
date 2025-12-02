@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional
-from langchain_openai import ChatOpenAI
+# Use browser_use's internal LLM implementation to ensure compatibility
+from browser_use.llm.openai.chat import ChatOpenAI
 import os
 
 class BaseAgent:
