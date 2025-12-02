@@ -91,7 +91,7 @@ async def run_agent(runner, job_id, target_url, session_id):
         company_name="GenAI Corp",
         job_description="Build autonomous agents.",
         user_profile={"name": "Simulated User", "email": "sim@example.com"},
-        resume_path=os.path.join(project_root, "tests", "dummy_resume.pdf"),
+        resume_path=os.path.join(project_root, "profile_data", "CVs", "john_doe.pdf"),
         user_hint="HIGH"
     )
 
@@ -178,10 +178,9 @@ async def main():
         logger.info(f"Agent {i+1} Result: {res['status']}")
 
 if __name__ == "__main__":
-    # Ensure dummy resume exists
-    resume_path = os.path.join(project_root, "tests", "dummy_resume.pdf")
+    # Ensure resume exists
+    resume_path = os.path.join(project_root, "profile_data", "CVs", "john_doe.pdf")
     if not os.path.exists(resume_path):
-        with open(resume_path, 'wb') as f:
-            f.write(b"%PDF-1.4 mock resume")
+        logger.warning(f"Resume not found at {resume_path}")
 
     asyncio.run(main())

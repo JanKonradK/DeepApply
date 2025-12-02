@@ -156,7 +156,8 @@ async def run_e2e_test(mock_db=True, headless=True):
                 "location": {"city": "Berlin"}
             },
             user_effort_hint="HIGH",
-            company_tier="top"
+            company_tier="top",
+            resume_path=os.path.join(project_root, "profile_data", "CVs", "john_doe.pdf")
         )
 
         print_header("Simulation Results")
