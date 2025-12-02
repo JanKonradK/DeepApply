@@ -1,5 +1,5 @@
-# Using Python 3.13 for latest features and performance improvements
-FROM python:3.13-slim
+# Using Python 3.12 for dependency compatibility (Ray, MLflow)
+FROM python:3.12-slim
 
 WORKDIR /app
 
