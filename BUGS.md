@@ -8,12 +8,7 @@
 
 ### Medium Priority
 
-1. **Browser Launch in WSL**
-   - **Status:** Solvable - Use IDE Chrome
-   - **Description:** Playwright times out when launching browser in WSL without display
-   - **Impact:** Can't run end-to-end tests in current environment
-   - **Solution:** Configure browser-use to connect to Chrome DevTools Protocol (CDP) running on IDE Chrome
-   - **Priority:** Medium (affects local testing only)
+**None currently** - WSL browser issue resolved with headless mode.
 
 ### Low Priority
 
@@ -23,7 +18,15 @@
 
 ## ✅ Resolved Bugs
 
-### Sprint 1-5 Bug Fixes
+### Sprint 1-6 Bug Fixes
+
+1. **Browser Launch in WSL** ✅ FIXED
+   - **Date:** 2025-12-02
+   - **Severity:** Medium
+   - **Issue:** Playwright times out when launching browser in WSL without display
+   - **Solution:** Configured browser-use to use headless mode with proper args
+   - **Files:** `services/agent/src/agents/enhanced_form_filler.py`, `services/agent/src/utils/browser_config.py`
+   - **Notes:** Browser automation now works in headless mode in WSL. For visible browser, use Docker or native Linux.
 
 1. **ChatOpenAI Provider Error** ✅ FIXED
    - **Date:** 2025-12-02

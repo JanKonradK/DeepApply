@@ -114,9 +114,21 @@ class EnhancedFormFiller(BaseAgent):
 
         try:
             # Execute with browser-use
-            browser_agent = BrowserAgent(task=task, llm=self.llm)
+            # Note: browser-use will use headless mode by default in WSL
+            browser_agent = BrowserAgent(
+                task=task,
+                llm=self.llm,
+                browser_kwargs={
+                    'headless': True,  # Force headless in WSL
+                    'args': [
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-dev-shm-usage',
+                    ]
+                }
+            )
 
-            logger.info("Starting browser automation...")
+            logger.info("Starting browser automation (headless mode)...")
             history = await browser_agent.run()
             result = history.final_result()
 
