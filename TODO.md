@@ -64,11 +64,25 @@
 ## 📋 Phase 6 - Production Features
 
 ### Session Digest & Analytics
-- [ ] Post-session summary generation
-  - [ ] Applications submitted
-  - [ ] Success/failure breakdown
-  - [ ] Cost analysis
-  - [ ] Per-domain stats
+- [x] Post-session summary generation
+  - [x] Applications submitted
+  - [x] Success/failure breakdown
+  - [x] Cost analysis
+  - [x] Per-domain stats
+- [x] Session creation and lifecycle management
+  - [x] API endpoint: POST /sessions
+  - [x] Parameters: target app count, max duration, max concurrency
+  - [x] Create sessions row with status "running"
+- [x] Session Control
+  - [x] Stop when limit reached or time exceeded
+  - [x] Manual stop endpoint: POST /sessions/{id}/stop
+  - [x] Update status to "completed" or "failed"
+- [x] Digest Generation
+  - [x] At session end, aggregate stats
+  - [x] Apps per effort level, per domain
+  - [x] Success rate, failures, reasons
+  - [x] Token consumption, estimated cost
+  - [x] Persist summary record
 - [ ] Email digest delivery
   - [ ] HTML email templates
   - [ ] SMTP configuration

@@ -6,6 +6,7 @@ from uuid import uuid4
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
 from .orchestrator import Orchestrator
+from .session_manager import SessionManager
 from .rag_engine import KnowledgeBase
 from .matching import ProfileMatcher, load_profile_from_resume
 from .planning import EffortPlanner
@@ -151,7 +152,55 @@ async def startup_event():
     # Initialize Orchestrator
     orchestrator = Orchestrator()
 
+    # Initialize Session Manager
+    global session_manager
+    session_manager = SessionManager()
+
     logger.info("Agent system ready")
+
+
+class SessionCreateRequest(BaseModel):
+    user_id: str
+    session_name: str
+    max_applications: int = 100
+    max_duration_seconds: int = 3600
+    max_parallel_agents: int = 5
+    config: Optional[Dict] = None
+
+
+@app.post("/sessions")
+async def create_session(request: SessionCreateRequest):
+    """Start a new application session"""
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager not initialized")
+
+    try:
+        session_id = session_manager.create_session(
+            user_id=UUID(request.user_id),
+            session_name=request.session_name,
+            max_applications=request.max_applications,
+            max_duration_seconds=request.max_duration_seconds,
+            max_parallel_agents=request.max_parallel_agents,
+            config=request.config
+        )
+        return {"status": "success", "session_id": str(session_id)}
+    except Exception as e:
+        logger.error(f"Failed to create session: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/sessions/{session_id}/stop")
+async def stop_session(session_id: str):
+    """Stop a running session"""
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager not initialized")
+
+    try:
+        session_manager.stop_session(UUID(session_id))
+        return {"status": "success", "message": "Session stopped"}
+    except Exception as e:
+        logger.error(f"Failed to stop session: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/apply")
@@ -299,6 +348,7 @@ def health():
             "rag": kb is not None,
             "orchestrator": orchestrator is not None,
             "application_runner": application_runner is not None,
-            "qa_agent": qa_agent is not None
+            "qa_agent": qa_agent is not None,
+            "session_manager": session_manager is not None
         }
     }

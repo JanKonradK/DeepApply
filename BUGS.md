@@ -7,11 +7,12 @@
 **None currently** - All critical bugs have been resolved.
 
 ### Medium Priority
+
 1. **Browser Launch in WSL**
-   - **Status:** Environmental limitation
+   - **Status:** Solvable - Use IDE Chrome
    - **Description:** Playwright times out when launching browser in WSL without display
    - **Impact:** Can't run end-to-end tests in current environment
-   - **Workaround:** Run in Docker or on system with display
+   - **Solution:** Configure browser-use to connect to Chrome DevTools Protocol (CDP) running on IDE Chrome
    - **Priority:** Medium (affects local testing only)
 
 ### Low Priority
