@@ -52,7 +52,8 @@
 - [x] Timeout handling
 - [x] Cost tracking
 - [ ] Integration with EnhancedFormFiller workflow
-- [ ] CAPTCHA event logging to database
+- [x] CAPTCHA event logging to database
+- [x] 2FA event logging to database
 
 ### Manual Intervention
 - [x] Telegram bot for 2FA codes
@@ -63,6 +64,14 @@
 - [ ] Session pause/resume on 2FA
 - [ ] Timeout handling (5 min wait)
 - [ ] Skip to next application on failure
+
+### Rate Limiting & Blocking
+- [x] Domain rate limit tracking
+- [x] Per-domain application counts
+- [x] Temporary blocking on errors
+- [x] Domain-specific policies
+- [ ] LinkedIn conservative limits
+- [ ] Automatic backoff on failures
 
 ### Testing
 - [ ] Test CAPTCHA solver with real challenges
