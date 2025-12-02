@@ -151,6 +151,28 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run E2E Workflow Test")
     parser.add_argument("--real-db", action="store_true", help="Use real database")
     parser.add_argument("--visible", action="store_true", help="Run browser in visible mode")
+
+    # Load .env file if present
+    env_path = os.path.join(project_root, '.env')
+    if os.path.exists(env_path):
+        print(f"Loading environment from {env_path}")
+        with open(env_path, 'r') as f:
+            for line in f:
+                if line.strip() and not line.startswith('#'):
+                    key, value = line.strip().split('=', 1)
+                    os.environ[key] = value
+
+    # Mock environment variables if not set (only if not loaded from .env)
+    if not os.environ.get("OPENAI_API_KEY"):
+        logger.warning("OPENAI_API_KEY not found! Browser automation will fail.")
+        os.environ.setdefault("OPENAI_API_KEY", "sk-mock-key")
+
+    if not os.environ.get("GROK_API_KEY"):
+        logger.warning("GROK_API_KEY not found! Browser automation will fail.")
+        os.environ.setdefault("GROK_API_KEY", "grok-mock-key")
+
+    os.environ.setdefault("AGENT_MODEL", "grok-beta")
+
     args = parser.parse_args()
 
     sys.exit(asyncio.run(run_e2e_test(mock_db=not args.real_db, headless=not args.visible)))
