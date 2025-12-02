@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAI Automation Test Ground - Advanced Workflow</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            position: relative;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #e0e0e0;
+            z-index: 0;
+            transform: translateY(-50%);
+        }
+
+        .step {
+            background-color: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #999;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .step.active {
+            border-color: #3498db;
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        .step.completed {
+            border-color: #2ecc71;
+            background-color: #2ecc71;
+            color: #fff;
+        }
+
+        .form-section {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .phone-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .phone-group select {
+            width: 30%;
+        }
+
+        .phone-group input {
+            width: 70%;
+        }
+
+        .education-entry {
+            background-color: #f9f9f9;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .remove-edu {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .radio-option,
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .radio-option input,
+        .checkbox-option input {
+            width: auto;
+            margin: 0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .btn-prev {
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+        }
+
+        .btn-prev:hover {
+            background-color: #bdc3c7;
+        }
+
+        .btn-next {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-next:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-submit {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background-color: #27ae60;
+        }
+
+        .file-upload {
+            border: 2px dashed #ddd;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: #3498db;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Workflow Automation Test</h1>
+        <div class="subtitle">Complete all steps to verify autonomous capabilities</div>
+
+        <div class="step-indicator">
+            <div class="step active" data-step="1">1</div>
+            <div class="step" data-step="2">2</div>
+            <div class="step" data-step="3">3</div>
+            <div class="step" data-step="4">4</div>
+        </div>
+
+        <form id="automation-form" action="#" method="POST" enctype="multipart/form-data">
+
+            <!-- Step 1: Personal Info -->
+            <div class="form-section active" id="section-1">
+                <h2>Personal Information</h2>
+
+                <div class="form-group">
+                    <label for="full-name" class="required">Full Name</label>
+                    <input type="text" id="full-name" name="full_name" required placeholder="e.g. Jane Doe">
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="required">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="e.g. jane@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone" class="required">Phone Number</label>
+                    <div class="phone-group">
+                        <select name="phone_country" id="phone-country">
+                            <option value="+1">🇺🇸 +1</option>
+                            <option value="+44">🇬🇧 +44</option>
+                            <option value="+49">🇩🇪 +49</option>
+                            <option value="+33">🇫🇷 +33</option>
+                            <option value="+48">🇵🇱 +48</option>
+                        </select>
+                        <input type="tel" id="phone" name="phone_number" placeholder="123 456 7890">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="linkedin">LinkedIn Profile URL</label>
+                    <input type="text" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/...">
+                </div>
+
+                <div class="nav-buttons">
+                    <button type="button" class="btn-prev" disabled>Previous</button>
+                    <button type="button" class="btn-next" onclick="nextStep(1)">Next</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Education & Experience -->
+            <div class="form-section" id="section-2">
+                <h2>Education & Experience</h2>
+
+                <div id="education-container">
+                    <div class="education-entry">
+                        <div class="form-group">
+                            <label class="required">Degree Level</label>
+                            <select name="degree_0" required>
+                                <option value="">Select Degree...</option>
+                                <option value="bachelors">Bachelor's</option>
+                                <option value="masters">Master's</option>
+                                <option value="phd">PhD</option>
+                                <option value="diploma">Diploma</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="required">University / Institution</label>
+                            <input type="text" name="university_0" placeholder="e.g. MIT">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-secondary" onclick="addEducation()">+ Add Another Degree</button>
+
+                <div class="form-group">
+                    <label for="cv-upload" class="required">Upload CV / Resume</label>
+                    <div class="file-upload" onclick="document.getElementById('cv-upload').click()">
+                        <p>Click to upload PDF or DOCX</p>
+                        <input type="file" id="cv-upload" name="cv_file" style="display: none"
+                            onchange="updateFileName(this)">
+                        <span id="file-name" style="font-size: 0.8rem; color: #666;"></span>
+                    </div>
+                </div>
+
+                <div class="nav-buttons">
+                    <button type="button" class="btn-prev" onclick="prevStep(2)">Previous</button>
+                    <button type="button" class="btn-next" onclick="nextStep(2)">Next</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Health & Compliance -->
+            <div class="form-section" id="section-3">
+                <h2>Compliance & Health</h2>
+
+                <div class="form-group">
+                    <label class="required">Are you legally authorized to work in this country?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="auth_work" value="yes" required> Yes
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="auth_work" value="no"> No
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Do you require visa sponsorship now or in the future?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="sponsorship" value="yes" required> Yes
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="sponsorship" value="no"> No
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Disability Status (Voluntary)</label>
+                    <select name="disability">
+                        <option value="decline">I decline to answer</option>
+                        <option value="no">No, I do not have a disability</option>
+                        <option value="yes">Yes, I have a disability</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Terms & Conditions</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="terms" required> I agree to the processing of my data for
+                            automation testing purposes.
+                        </label>
+                    </div>
+                </div>
+
+                <div class="nav-buttons">
+                    <button type="button" class="btn-prev" onclick="prevStep(3)">Previous</button>
+                    <button type="button" class="btn-next" onclick="nextStep(3)">Next</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Context & Final -->
+            <div class="form-section" id="section-4">
+                <h2>Final Context</h2>
+
+                <div class="form-group">
+                    <label for="cover-letter">Contextual Message / Cover Letter</label>
+                    <textarea id="cover-letter" name="cover_letter"
+                        placeholder="Generated content goes here..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="screening-q1" class="required">Why are you interested in this workflow?</label>
+                    <textarea id="screening-q1" name="screening_q1" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="screening-q2">Describe a challenging automation problem you solved.</label>
+                    <textarea id="screening-q2" name="screening_q2"></textarea>
+                </div>
+
+                <div class="nav-buttons">
+                    <button type="button" class="btn-prev" onclick="prevStep(4)">Previous</button>
+                    <button type="submit" class="btn-submit">Submit Workflow</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        let eduCount = 1;
+
+        function nextStep(currentStep) {
+            // Simple validation
+            const currentSection = document.getElementById(`section-${currentStep}`);
+            const inputs = currentSection.querySelectorAll('input[required], select[required], textarea[required]');
+            let valid = true;
+            inputs.forEach(input => {
+                if (!input.value || (input.type === 'checkbox' && !input.checked) || (input.type === 'radio' && !document.querySelector(`input[name="${input.name}"]:checked`))) {
+                    valid = false;
+                    input.style.borderColor = '#e74c3c';
+                } else {
+                    input.style.borderColor = '#ddd';
+                }
+            });
+
+            if (!valid) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            // Navigate
+            document.getElementById(`section-${currentStep}`).classList.remove('active');
+            document.getElementById(`section-${currentStep + 1}`).classList.add('active');
+
+            // Update indicators
+            document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('completed');
+            document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+            document.querySelector(`.step[data-step="${currentStep + 1}"]`).classList.add('active');
+        }
+
+        function prevStep(currentStep) {
+            document.getElementById(`section-${currentStep}`).classList.remove('active');
+            document.getElementById(`section-${currentStep - 1}`).classList.add('active');
+
+            // Update indicators
+            document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+            document.querySelector(`.step[data-step="${currentStep - 1}"]`).classList.add('active');
+            document.querySelector(`.step[data-step="${currentStep - 1}"]`).classList.remove('completed');
+        }
+
+        function addEducation() {
+            const container = document.getElementById('education-container');
+            const div = document.createElement('div');
+            div.className = 'education-entry';
+            div.innerHTML = `
+            <span class="remove-edu" onclick="this.parentElement.remove()">× Remove</span>
+            <div class="form-group">
+                <label class="required">Degree Level</label>
+                <select name="degree_${eduCount}" required>
+                    <option value="">Select Degree...</option>
+                    <option value="bachelors">Bachelor's</option>
+                    <option value="masters">Master's</option>
+                    <option value="phd">PhD</option>
+                    <option value="diploma">Diploma</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="required">University / Institution</label>
+                <input type="text" name="university_${eduCount}" placeholder="e.g. Stanford">
+            </div>
+        `;
+            container.appendChild(div);
+            eduCount++;
+        }
+
+        function updateFileName(input) {
+            const span = document.getElementById('file-name');
+            if (input.files && input.files.length > 0) {
+                span.textContent = input.files[0].name;
+            } else {
+                span.textContent = '';
+            }
+        }
+
+        document.getElementById('automation-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            console.log('Form Submitted:', data);
+            alert('Workflow Submitted Successfully!\n\nData captured in console.');
+        });
+    </script>
+
+</body>
+
+</html>
