@@ -1,0 +1,88 @@
+# Nyx Venatrix: Effort Planning Policy Configuration
+# Defines thresholds and rules for automatic effort level assignment
+
+thresholds:
+  # Match score thresholds (0.0 - 1.0)
+  high_match: 0.75  # Considered a strong match
+  medium_match: 0.60  # Acceptable match
+  low_match: 0.50  # Marginal match
+
+  # Company tier thresholds
+  top_tier_boost: true  # Upgrade effort for top-tier companies
+  avoid_tier_skip: true  # Skip applications to "avoid" tier companies
+
+# Automatic effort level upgrade rules
+upgrade_rules:
+  # Upgrade low → medium
+  - condition: "match_score >= {high_match}"
+    from_effort: "low"
+    to_effort: "medium"
+    reason: "Strong match detected"
+
+  - condition: "company_tier == 'top'"
+    from_effort: "low"
+    to_effort: "medium"
+    reason: "Top-tier company"
+
+  - condition: "match_score >= {medium_match} and company_tier == 'top'"
+    from_effort: "medium"
+    to_effort: "high"
+    reason: "Good match with top-tier company"
+
+# Automatic effort level downgrade rules
+downgrade_rules:
+  # Downgrade medium → low
+  - condition: "match_score < {low_match}"
+    from_effort: "medium"
+    to_effort: "low"
+    reason: "Low match score"
+
+  # Flag for review (don't auto-downgrade high)
+  - condition: "match_score < {low_match} and effort_hint == 'high'"
+    from_effort: "high"
+    to_effort: "flag_for_review"
+    reason: "High effort requested but very low match"
+
+# Skip rules (don't apply at all)
+skip_rules:
+  - condition: "company_tier == 'avoid'"
+    reason: "Company flagged as avoid"
+
+  - condition: "match_score < 0.30"
+    reason: "Match score too low (< 30%)"
+
+# QA requirements (when to trigger QA agent)
+qa_requirements:
+  - condition: "effort_level == 'high'"
+    require_qa: true
+    qa_type: "hallucination_check"
+
+  - condition: "company_tier == 'top' and effort_level == 'medium'"
+    require_qa: true
+    qa_type: "consistency_check"
+
+# CV modification rules (when allowed to modify CV)
+cv_modification:
+  allow_modification: false  # DISABLED for initial implementation
+  conditions:
+    - "effort_level == 'high' and match_score < {low_match}"
+  restrictions:
+    - "Only formatting changes, no content hallucination"
+    - "Must log all changes to application_questions"
+    - "Requires QA pass before submission"
+
+# Cost awareness (optional limits)
+cost_limits:
+  max_cost_per_application:
+    low: 0.02  # USD
+    medium: 0.10
+    high: 0.25
+
+  warn_if_exceeded: true
+  abort_if_exceeded: false  # Just warn, don't abort
+
+# Logging
+logging:
+  log_all_decisions: true
+  log_skipped_applications: true
+  log_effort_changes: true

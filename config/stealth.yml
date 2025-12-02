@@ -1,0 +1,219 @@
+# Nyx Venatrix: Stealth & Rate Limiting Configuration
+# Prevents bans and ensures human-like behavior
+
+# ============================================================================
+# GLOBAL SETTINGS
+# ============================================================================
+global:
+  enabled: true
+  min_delay_between_apps_sec: 30
+  max_delay_between_apps_sec: 180
+  max_apps_per_session: 300
+  max_apps_per_day: 300
+
+  # Time-of-day restrictions (24-hour format)
+  allowed_hours:
+    start: 8  # 8 AM
+    end: 22   # 10 PM
+
+  # Pause on consecutive failures
+  pause_after_consecutive_failures: 5
+  pause_duration_minutes: 30
+
+# ============================================================================
+# PER-DOMAIN POLICIES
+# ============================================================================
+domains:
+  # LinkedIn - Very conservative
+  linkedin.com:
+    max_apps_per_day: 20
+    max_apps_per_hour: 5
+    min_delay_sec: 60
+    max_delay_sec: 300
+    max_concurrent: 1
+    avoid_where_possible: true
+    notes: "LinkedIn has aggressive bot detection"
+
+  # Indeed
+  indeed.com:
+    max_apps_per_day: 50
+    max_apps_per_hour: 15
+    min_delay_sec: 30
+    max_delay_sec: 120
+    max_concurrent: 2
+    avoid_where_possible: false
+
+  indeed.de:
+    max_apps_per_day: 50
+    max_apps_per_hour: 15
+    min_delay_sec: 30
+    max_delay_sec: 120
+    max_concurrent: 2
+
+  # StepStone
+  stepstone.de:
+    max_apps_per_day: 40
+    max_apps_per_hour: 12
+    min_delay_sec: 40
+    max_delay_sec: 150
+    max_concurrent: 2
+
+  # Glassdoor
+  glassdoor.com:
+    max_apps_per_day: 30
+    max_apps_per_hour: 10
+    min_delay_sec: 45
+    max_delay_sec: 180
+    max_concurrent: 1
+
+  # Company career sites (generic)
+  company_site:
+    max_apps_per_day: 100
+    max_apps_per_hour: 25
+    min_delay_sec: 20
+    max_delay_sec: 90
+    max_concurrent: 3
+    notes: "Generic policy for company career pages"
+
+# ============================================================================
+# RANDOMIZATION PATTERNS
+# ============================================================================
+randomization:
+  # Typing delays (milliseconds)
+  keystroke_delay_ms:
+    mean: 120
+    stddev: 40
+    min: 50
+    max: 300
+
+  # Between fields
+  inter_field_pause_sec:
+    min: 0.3
+    max: 2.0
+    distribution: "uniform"
+
+  # Between questions
+  inter_question_pause_sec:
+    min: 0.5
+    max: 3.0
+    distribution: "exponential"  # Occasionally long pauses
+
+  # Between form pages
+  inter_page_pause_sec:
+    min: 1.0
+    max: 5.0
+    distribution: "normal"
+    mean: 2.5
+    stddev: 1.0
+
+  # Between applications
+  inter_application_pause_sec:
+    min: 30
+    max: 180
+    distribution: "exponential"
+
+  # Mouse movement
+  mouse_movement:
+    enabled: true
+    speed_px_per_sec:
+      min: 100
+      max: 500
+    bezier_curves: true  # Natural mouse paths
+
+# ============================================================================
+# BROWSER FINGERPRINTING
+# ============================================================================
+fingerprint:
+  # Rotate user agents
+  rotate_user_agents: true
+  user_agent_pool:
+    - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    - "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+  # Canvas fingerprinting
+  canvas_noise: true
+
+  # WebGL fingerprinting
+  webgl_noise: true
+
+  # Timezone
+  timezone: "Europe/Berlin"  # Match your location
+
+  # Language
+  languages:
+    - "en-US"
+    - "en"
+    - "de-DE"
+    - "de"
+
+# ============================================================================
+# BLOCKING & ERROR HANDLING
+# ============================================================================
+blocking:
+  # Detection patterns
+  detect_blocking:
+    http_errors: [403, 429, 503]
+    text_patterns:
+      - "access denied"
+      - "rate limit"
+      - "too many requests"
+      - "suspicious activity"
+      - "captcha"
+      - "verification required"
+
+  # Actions on block detection
+  on_block_detected:
+    pause_domain: true
+    pause_duration_hours: 24
+    notify_user: true
+    log_event: true
+
+  # Recovery strategy
+  recovery:
+    max_retry_attempts: 3
+    retry_delay_minutes: 60
+    exponential_backoff: true
+
+# ============================================================================
+# CAPTCHA HANDLING
+# ============================================================================
+captcha:
+  auto_solve_enabled: true
+  max_auto_attempts: 3
+  solver_timeout_sec: 120
+
+  # Fallback to manual
+  fallback_to_manual: true
+  manual_notification_method: "telegram"
+  manual_timeout_minutes: 30
+
+# ============================================================================
+# SESSION PACING
+# ============================================================================
+session_pacing:
+  # Warm-up period (start slowly)
+  warmup_applications: 5
+  warmup_delay_multiplier: 2.0
+
+  # Cool-down period (end slowly)
+  cooldown_applications: 5
+  cooldown_delay_multiplier: 1.5
+
+  # Randomize session length
+  randomize_session_end: true
+  session_end_variance_percent: 10
+
+# ============================================================================
+# LOGGING & MONITORING
+# ============================================================================
+logging:
+  log_all_delays: false  # Too verbose
+  log_rate_limit_enforcement: true
+  log_blocking_events: true
+  log_fingerprint_rotation: false
+
+monitoring:
+  prometheus_metrics: true
+  track_domain_health: true
+  alert_on_block: true

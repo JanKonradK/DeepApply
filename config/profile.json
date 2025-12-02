@@ -1,0 +1,170 @@
+{
+  "name": "Jan Kruszynski",
+  "email": "jan.example@email.com",
+  "phone": "+49-XXX-XXXXXXX",
+  "location": {
+    "city": "Berlin",
+    "country": "Germany",
+    "willing_to_relocate": false,
+    "remote_preferred": true
+  },
+
+  "skills_true": [
+    "Python",
+    "FastAPI",
+    "PyTorch",
+    "Hugging Face Transformers",
+    "LangChain",
+    "LangGraph",
+    "OpenAI API",
+    "Anthropic Claude",
+    "MLflow",
+    "PostgreSQL",
+    "Docker",
+    "Git",
+    "RAG (Retrieval-Augmented Generation)",
+    "Vector Databases",
+    "Qdrant",
+    "Prompt Engineering",
+    "LLM Fine-tuning",
+    "Agentic AI",
+    "Pandas",
+    "NumPy",
+    "Scikit-learn",
+    "REST APIs",
+    "Async Python",
+    "Browser Automation",
+    "Playwright",
+    "Data Engineering",
+    "SQL",
+    "Redis",
+    "Linux",
+    "CI/CD",
+    "GitHub Actions",
+    "LaTeX",
+    "Technical Writing"
+  ],
+
+  "skills_false": [
+    "TensorFlow",
+    "Kubernetes Expert",
+    "AWS Certified Solutions Architect",
+    "Go",
+    "Rust",
+    "Scala",
+    "Hadoop",
+    "Spark",
+    "C++",
+    "Java Enterprise",
+    "DevOps Lead",
+    "COBOL",
+    "Embedded Systems",
+    "Hardware Engineering",
+    "Mobile App Development (iOS/Android)"
+  ],
+
+  "languages": [
+    {"language": "English", "level": "C2", "notes": "Fluent, professional proficiency"},
+    {"language": "Polish", "level": "C2", "notes": "Native speaker"},
+    {"language": "German", "level": "B2", "notes": "Professional working proficiency"}
+  ],
+
+  "experience_summary": {
+    "years_of_experience": 3,
+    "years_in_ai_ml": 2,
+    "years_in_llm_engineering": 1,
+    "senior_level": false,
+    "current_role": "AI/ML Engineer",
+    "domains": [
+      "Generative AI",
+      "LLM Applications",
+      "Agentic AI Systems",
+      "RAG Pipelines",
+      "Data Engineering"
+    ]
+  },
+
+  "education": [
+    {
+      "degree": "Master of Science",
+      "field": "Computer Science",
+      "institution": "Technical University Example",
+      "graduation_year": 2021,
+      "specialization": "Machine Learning & AI"
+    }
+  ],
+
+  "certifications": [
+    "OpenAI API Certification (hypothetical)",
+    "Deep Learning Specialization (Coursera)"
+  ],
+
+  "role_preferences": {
+    "preferred_titles": [
+      "AI Engineer",
+      "ML Engineer",
+      "LLM Engineer",
+      "Generative AI Engineer",
+      "AI/ML Software Engineer",
+      "Machine Learning Engineer",
+      "Applied AI Engineer"
+    ],
+    "avoid_titles": [
+      "Data Analyst",
+      "BI Developer",
+      "Junior positions",
+      "Intern",
+      "Frontend Developer",
+      "QA Engineer"
+    ],
+    "seniority_levels": [
+      "mid",
+      "senior"
+    ],
+    "employment_type": [
+      "full_time"
+    ],
+    "domains": [
+      "Generative AI",
+      "LLM Applications",
+      "AI Agents",
+      "NLP",
+      "AI Research & Development",
+      "MLOps"
+    ]
+  },
+
+  "salary_expectations": {
+    "currency": "EUR",
+    "minimum_annual": 65000,
+    "target_annual": 80000,
+    "maximum_annual": 95000,
+    "notes": "Flexible based on company tier, equity, remote options"
+  },
+
+  "work_preferences": {
+    "remote": "required",
+    "hybrid": "acceptable",
+    "onsite": "not_preferred",
+    "max_commute_minutes": 45,
+    "relocation_willing": false,
+    "visa_sponsorship_needed": false
+  },
+
+  "availability": {
+    "notice_period_weeks": 4,
+    "immediately_available": false,
+    "available_from": "2025-02-01"
+  },
+
+  "validation_rules": {
+    "never_claim_experience_years_beyond": 3,
+    "never_claim_senior_title": true,
+    "never_invent_company_names": true,
+    "never_invent_education": true,
+    "never_claim_false_skills": true,
+    "always_verify_against_cv": true
+  },
+
+  "notes": "This is a template profile. Replace with actual user data. The skills_false list is critical for preventing hallucinations."
+}
