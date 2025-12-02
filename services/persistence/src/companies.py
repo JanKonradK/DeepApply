@@ -12,7 +12,7 @@ class CompanyRepository:
 
     def get_by_id(self, company_id: UUID) -> Optional[Dict[str, Any]]:
         """Get company by ID."""
-        with self.conn.cursor() as cur:
+        with self.conn.get_cursor() as cur:
             cur.execute(
                 "SELECT * FROM companies WHERE id = %s",
                 (str(company_id),)
@@ -21,7 +21,7 @@ class CompanyRepository:
 
     def get_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         """Get company by name (case insensitive match)."""
-        with self.conn.cursor() as cur:
+        with self.conn.get_cursor() as cur:
             cur.execute(
                 "SELECT * FROM companies WHERE LOWER(name) = LOWER(%s)",
                 (name,)
@@ -30,7 +30,7 @@ class CompanyRepository:
 
     def create_or_update(self, name: str, domain: Optional[str] = None, tier: str = 'normal') -> UUID:
         """Create or update a company record."""
-        with self.conn.cursor() as cur:
+        with self.conn.get_cursor() as cur:
             # Check if exists by domain first if provided
             if domain:
                 cur.execute("SELECT id FROM companies WHERE canonical_domain = %s", (domain,))
@@ -57,7 +57,7 @@ class CompanyRepository:
 
     def update_stats(self, company_id: UUID, stats: Dict[str, Any]):
         """Update company statistics/properties."""
-        with self.conn.cursor() as cur:
+        with self.conn.get_cursor() as cur:
             for key, value in stats.items():
                 cur.execute(
                     """

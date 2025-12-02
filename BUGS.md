@@ -7,7 +7,6 @@
 **None currently** - All critical bugs have been resolved.
 
 ### Medium Priority
-
 1. **Browser Launch in WSL**
    - **Status:** Environmental limitation
    - **Description:** Playwright times out when launching browser in WSL without display
@@ -15,23 +14,9 @@
    - **Workaround:** Run in Docker or on system with display
    - **Priority:** Medium (affects local testing only)
 
-2. **Test Mock Issue**
-   - **Status:** Minor test issue
-   - **File:** `tests/test_persistence.py`
-   - **Description:** Mock cursor expectations don't match implementation
-   - **Impact:** 1 test fails, but actual code works correctly
-   - **Workaround:** Adjust test expectations
-   - **Priority:** Low (non-blocking)
-
 ### Low Priority
 
-1. **Docker Version Warning**
-   - **Description:** Docker Compose shows warning about obsolete `version` attribute
-   - **Impact:** Cosmetic only, doesn't affect functionality
-   - **Fix:** Remove `version:` from docker-compose.yml files
-   - **Priority:** Low
-
-2. **Async Test Handling**
+1. **Async Test Handling**
    - **File:** `tests/test_agents.py`
    - **Description:** `test_discovery_agent` marked as async but unittest doesn't await properly
    - **Impact:** Test never executes, shows deprecation warning
@@ -92,6 +77,20 @@
    - **Files:**
      - `services/agent/src/planning/effort_planner.py`
      - `services/agent/src/agents/enhanced_form_filler.py`
+
+7. **Test Mock Issue** ✅ FIXED
+   - **Date:** 2025-12-02
+   - **Severity:** Low
+   - **Issue:** Mock cursor expectations didn't match `get_cursor` implementation
+   - **Solution:** Updated test mocks to handle context managers correctly
+   - **Files:** `tests/test_persistence.py`
+
+8. **Docker Version Warning** ✅ FIXED
+   - **Date:** 2025-12-02
+   - **Severity:** Low
+   - **Issue:** Deprecated `version` attribute in compose file
+   - **Solution:** Removed `version` field
+   - **Files:** `docker-compose.yml`
 
 ---
 
