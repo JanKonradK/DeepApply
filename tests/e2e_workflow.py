@@ -100,8 +100,38 @@ async def run_e2e_test(mock_db=True, headless=True):
     )
 
     # 2. Define Target
-    target_path = os.path.join(project_root, 'tests', 'example_target_site.html')
-    target_url = f"file://{target_path}"
+    # Start a simple HTTP server to serve the test file
+    import http.server
+    import socketserver
+    import threading
+    import queue
+
+    Handler = http.server.SimpleHTTPRequestHandler
+
+    # Change to tests directory to serve files from there
+    os.chdir(os.path.join(project_root, 'tests'))
+
+    port_queue = queue.Queue()
+
+    def start_server():
+        # Use port 0 to let OS choose a free port
+        with socketserver.TCPServer(("", 0), Handler) as httpd:
+            port = httpd.server_address[1]
+            print(f"Serving at port {port}")
+            port_queue.put(port)
+            httpd.serve_forever()
+
+    server_thread = threading.Thread(target=start_server, daemon=True)
+    server_thread.start()
+
+    # Wait for server to start and get port
+    try:
+        server_port = port_queue.get(timeout=10)
+    except queue.Empty:
+        logger.error("Failed to start test server: Timed out getting port")
+        sys.exit(1)
+
+    target_url = f"http://localhost:{server_port}/example_target_site.html"
     logger.info(f"Target URL: {target_url}")
 
     # 3. Run Application

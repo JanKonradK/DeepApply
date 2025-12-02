@@ -112,12 +112,18 @@ class EnhancedFormFiller(BaseAgent):
             resume_path=resume_path
         )
 
+        # Prepare tools
+        tools = []
+        if self.captcha_solver:
+            tools.append(self._solve_captcha)
+
         try:
             # Execute with browser-use
             # Note: browser-use will use headless mode by default in WSL
             browser_agent = BrowserAgent(
                 task=task,
                 llm=self.llm,
+                # tools=tools, # Uncomment when browser_use supports tools list directly
                 browser_kwargs={
                     'headless': True,  # Force headless in WSL
                     'args': [
@@ -299,18 +305,42 @@ class EnhancedFormFiller(BaseAgent):
             "- If 2FA requested: Return JSON { \"status\": \"2fa\", \"method\": \"...\" }",
             "- If blocked/error: Return JSON { \"status\": \"error\", \"details\": \"...\" }",
             "",
-            "IMPORTANT FINAL STEP:",
-            "When you reach the review page (or if you are instructed to stop), you MUST return a JSON string with the following format:",
+            "IMPORTANT: Return the final result as a JSON string with the following format:",
             "{",
-            "  \"status\": \"success\" | \"failed\" | \"review_ready\",",
-            "  \"summary\": \"Brief summary of what was filled\",",
-            "  \"missing_fields\": [\"list\", \"of\", \"missing\", \"fields\"],",
-            "  \"next_step\": \"submit\" | \"manual_intervention\"",
-            "}",
-            "DO NOT click the final submit button unless you are 100% sure. For now, STOP at the review page and return 'review_ready'.",
+            "  \"status\": \"success\" | \"failed\" | \"captcha\" | \"2fa\",",
+            "  \"summary\": \"Brief summary of what was done\",",
+            "  \"notes\": \"Any additional notes\"",
+            "}"
         ])
 
         return "\n".join(task_parts)
+
+    async def _solve_captcha(self, site_key: str, url: str, captcha_type: str = "recaptcha_v2") -> str:
+        """
+        Solves a CAPTCHA on the current page.
+        Args:
+            site_key: The site key found in the HTML (data-sitekey).
+            url: The current page URL.
+            captcha_type: One of 'recaptcha_v2', 'recaptcha_v3', 'hcaptcha', 'turnstile'.
+        """
+        if not self.captcha_solver:
+            return "CAPTCHA solver not configured."
+
+        logger.info(f"Attempting to solve CAPTCHA ({captcha_type}) for {url}")
+
+        if captcha_type == 'recaptcha_v2':
+            result = self.captcha_solver.solve_recaptcha_v2(site_key, url)
+        elif captcha_type == 'hcaptcha':
+            result = self.captcha_solver.solve_hcaptcha(site_key, url)
+        elif captcha_type == 'recaptcha_v3':
+            result = self.captcha_solver.solve_recaptcha_v3(site_key, url)
+        else:
+            return f"Unsupported CAPTCHA type: {captcha_type}"
+
+        if result:
+            return f"CAPTCHA solved. Solution token: {result}"
+        else:
+            return "Failed to solve CAPTCHA."
 
     async def _random_delay(self, delay_type: str):
         """Add randomized delay for stealth"""
