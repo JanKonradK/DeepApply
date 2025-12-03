@@ -83,19 +83,28 @@ class RayOrchestrator:
 
         self.max_workers = max_concurrent_workers
         self.initialized = False
+        self.workers = []
         logger.info(f"RayOrchestrator created with max_workers={max_concurrent_workers}")
 
     def initialize(self):
-        """Initialize Ray runtime"""
+        """Initialize Ray runtime and worker pool"""
         if not self.initialized:
             if not ray.is_initialized():
                 ray.init(ignore_reinit_error=True, logging_level=logging.INFO)
+
+            # Create worker pool
+            self.workers = [ApplicationWorker.remote(i) for i in range(self.max_workers)]
             self.initialized = True
-            logger.info("Ray runtime initialized")
+            logger.info(f"Ray runtime initialized with {len(self.workers)} workers")
 
     def shutdown(self):
         """Shutdown Ray runtime"""
         if self.initialized:
+            # Kill workers (optional, ray.shutdown handles it usually)
+            for worker in self.workers:
+                ray.kill(worker)
+            self.workers = []
+
             ray.shutdown()
             self.initialized = False
             logger.info("Ray runtime shutdown")
@@ -119,17 +128,13 @@ class RayOrchestrator:
 
         logger.info(f"Starting session {session_id} with {len(applications)} applications")
 
-        # Create worker pool
-        workers = [ApplicationWorker.remote(i) for i in range(self.max_workers)]
-        logger.info(f"Created {len(workers)} workers")
-
         # Distribute work
         results = []
         pending_tasks = []
 
         for i, app_config in enumerate(applications):
             # Assign to worker (round-robin)
-            worker = workers[i % len(workers)]
+            worker = self.workers[i % len(self.workers)]
 
             # Add session_id to config
             app_config['session_id'] = session_id

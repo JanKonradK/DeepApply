@@ -10,11 +10,7 @@ import sys
 import os
 import asyncio
 
-# Add services to path if not present (for standalone runs)
-try:
-    import persistence
-except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+
 
 from matching import ProfileMatcher
 from planning import EffortPlanner
@@ -40,6 +36,9 @@ class ApplicationRunner:
     4. Fill form with browser automation
     5. Log all events and metrics
     """
+
+    MAX_RETRIES = 3
+    RETRY_BASE_DELAY = 5  # seconds
 
     def __init__(
         self,
@@ -161,13 +160,11 @@ class ApplicationRunner:
             )
 
             # Step 3: Fill application form with retries
-            max_retries = 3
-            base_delay = 5  # seconds
             form_result = {'status': 'failed', 'summary': 'Max retries exceeded'}
 
-            for attempt in range(max_retries):
+            for attempt in range(self.MAX_RETRIES):
                 try:
-                    logger.info(f"Step 3: Filling form (effort: {effort_level}, attempt: {attempt + 1}/{max_retries})...")
+                    logger.info(f"Step 3: Filling form (effort: {effort_level}, attempt: {attempt + 1}/{self.MAX_RETRIES})...")
                     form_result = await self.form_filler.fill_application(
                         url=job_url,
                         job_title=job_title,
@@ -182,8 +179,8 @@ class ApplicationRunner:
                         break  # Success
 
                     # If failed, check if we should retry
-                    if attempt < max_retries - 1:
-                        delay = base_delay * (2 ** attempt)
+                    if attempt < self.MAX_RETRIES - 1:
+                        delay = self.RETRY_BASE_DELAY * (2 ** attempt)
                         logger.warning(f"Attempt {attempt + 1} failed: {form_result.get('summary')}. Retrying in {delay}s...")
 
                         # Log retry event
@@ -198,8 +195,8 @@ class ApplicationRunner:
 
                 except Exception as e:
                     logger.error(f"Attempt {attempt + 1} exception: {e}")
-                    if attempt < max_retries - 1:
-                        delay = base_delay * (2 ** attempt)
+                    if attempt < self.MAX_RETRIES - 1:
+                        delay = self.RETRY_BASE_DELAY * (2 ** attempt)
                         logger.warning(f"Retrying in {delay}s...")
                         await asyncio.sleep(delay)
                     else:

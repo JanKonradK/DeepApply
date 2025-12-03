@@ -159,6 +159,18 @@ async def startup_event():
     logger.info("Agent system ready")
 
 
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup resources on shutdown"""
+    logger.info("Shutting down agent...")
+    try:
+        from persistence.src.database import close_db
+        close_db()
+        logger.info("Database connection closed")
+    except Exception as e:
+        logger.error(f"Error closing database: {e}")
+
+
 class SessionCreateRequest(BaseModel):
     user_id: str
     session_name: str
@@ -241,8 +253,8 @@ async def apply_to_job(job: JobRequest):
             # Get user profile (simplified for now, usually fetched from DB/Context)
             # We'll use the profile loaded in the matcher as the base
             user_profile = {
-                "name": "Jan Kruszynski", # Should come from config/profile.json ideally
-                "email": "jan.example@email.com"
+                "name": os.getenv("USER_FULL_NAME", "Default User"),
+                "email": os.getenv("USER_EMAIL", "user@example.com")
             }
 
             result = await application_runner.run_application(

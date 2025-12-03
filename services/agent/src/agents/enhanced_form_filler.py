@@ -46,11 +46,9 @@ class EnhancedFormFiller(BaseAgent):
 
         # Load stealth config
         if stealth_config_path is None:
-            stealth_config_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))),
-                'config',
-                'stealth.yml'
-            )
+            from pathlib import Path
+            project_root = Path(__file__).parents[4]
+            stealth_config_path = project_root / 'config' / 'stealth.yml'
 
         with open(stealth_config_path, 'r') as f:
             self.stealth_config = yaml.safe_load(f)

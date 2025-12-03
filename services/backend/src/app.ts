@@ -43,7 +43,6 @@ const initializeQueue = (jobService: JobService) => {
 };
 
 // Service layer
-// Service layer
 const jobService = new JobService(jobRepository);
 
 // Now initialize real queue
