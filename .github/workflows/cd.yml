@@ -8,6 +8,24 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        service: [backend, agent, frontend]
+        include:
+          - service: backend
+            context: ./services/backend
+            dockerfile: ./infrastructure/docker/backend.Dockerfile
+          - service: agent
+            context: ./services/agent
+            dockerfile: ./infrastructure/docker/agent.Dockerfile
+          - service: frontend
+            context: ./services/frontend
+            dockerfile: ./infrastructure/docker/frontend.Dockerfile
+
     steps:
     - uses: actions/checkout@v3
 
@@ -21,14 +39,12 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push
+    - name: Build and push ${{ matrix.service }}
       uses: docker/build-push-action@v4
       with:
-        context: .
+        context: ${{ matrix.context }}
+        file: ${{ matrix.dockerfile }}
         push: true
         tags: |
-          ghcr.io/${{ github.repository }}/nyx-agent:latest
-          ghcr.io/${{ github.repository }}/nyx-agent:${{ github.ref_name }}
-
-    - name: Deploy Trigger
-      run: echo "Deployment trigger sent to production (mock)"
+          ghcr.io/${{ github.repository }}/nyx-${{ matrix.service }}:latest
+          ghcr.io/${{ github.repository }}/nyx-${{ matrix.service }}:${{ github.ref_name }}

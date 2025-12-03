@@ -1,223 +1,128 @@
 # Nyx Venatrix
 
-**Autonomous Job Application System with AI-Powered Browser Automation**
+**Advanced Distributed Agent System & Technical Showcase**
 
 [![CI](https://github.com/JanKonradK/Nyx_Venatrix/workflows/CI/badge.svg)](https://github.com/JanKonradK/Nyx_Venatrix/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-> A production-ready autonomous agent for intelligent job applications using browser automation, AI matching, and policy-driven decision making.
-
----
-
-## 🚀 Quick Start
-
-```bash
-# 1. Start shared database infrastructure
-docker compose -f docker-compose.db.yml up -d
-
-# 2. Set up environment
-cp .env.example .env
-# Edit .env with your API keys
-
-# 3. Run migrations
-python run_migrations.py
-
-# 4. Start application services
-docker compose up -d
-
-# 5. Test the system
-python cli_test_ingestion.py <job_url>
-```
+> A sophisticated distributed system demonstrating the convergence of browser automation, microservices architecture, and Large Language Models (LLMs) to solve complex, non-deterministic workflows.
 
 ---
 
-## ✨ Features
+## �️ Technical Stack
 
-### Core Capabilities
-- 🤖 **AI-Powered Matching** - OpenAI embeddings for job-profile similarity (0.0-1.0 scores)
-- 📋 **Policy-Driven Decisions** - Configurable effort planning (low/medium/high)
-- 🔄 **Ray Concurrency** - Up to 5 parallel browser agents
-- 🛡️ **Quality Assurance** - Hallucination prevention and answer validation
-- 📊 **Full Observability** - MLflow experiments + Langfuse LLM tracing
-- 🎭 **Stealth Features** - Per-domain rate limiting and anti-detection
+This project leverages a modern, high-performance stack designed for scalability and resilience:
 
-### Supported ATS Platforms
-- ✅ Greenhouse
-- ✅ Workday
-- 🔜 Lever, SmartRecruiters, others via extensible adapter pattern
+### Core Infrastructure
+*   **Language**: Python 3.12 (Agents/ML), TypeScript/Node.js (Backend/API)
+*   **Orchestration**: **Ray** - For distributed computing and managing parallel agent workers.
+*   **Containerization**: **Docker & Docker Compose** - Full microservices encapsulation.
 
----
+### Data & Persistence
+*   **Relational**: **PostgreSQL** - Primary data store for structured transaction data.
+*   **Vector**: **Qdrant** - High-performance vector search for semantic matching and retrieval-augmented generation (RAG).
+*   **Caching/Queue**: **Redis** - High-speed caching and task queue management.
 
-## 🏗️ Architecture
-
-```
-Browser Agents (Ray Workers)
-    ↓
-Job Ingestion → AI Matching → Effort Planning → Form Filling → QA Validation
-    ↓                                                              ↓
-PostgreSQL + Redis + Qdrant ← Event Logging ← MLflow + Langfuse
-```
-
-**Key Components:**
-- **Orchestration**: Ray for parallel execution
-- **Storage**: PostgreSQL (40+ tables), Redis (caching), Qdrant (vectors)
-- **Observability**: MLflow (experiments), Langfuse (LLM tracing)
-- **Browser**: Playwright + browser-use for automation
+### AI & Automation
+*   **LLMs**: Integration with **OpenAI** and **Grok** APIs for reasoning and decision making.
+*   **Automation**: **Playwright** & **Browser-use** for headless browser control and interaction.
+*   **Observability**: **MLflow** for experiment tracking and **Langfuse** for LLM trace monitoring.
 
 ---
 
-## 📦 Installation
+## 💡 Engineering Challenges & Learnings
+
+Building Nyx Venatrix presented several significant engineering hurdles that provided deep insights into distributed systems and AI agent design.
+
+### 1. Distributed State Management
+**Challenge**: Coordinating state across multiple independent browser agents (Ray workers) and a central Node.js backend without race conditions or data inconsistency.
+**Solution**: Implemented a robust event-driven architecture using Redis as a message broker and PostgreSQL for transactional integrity.
+**Learning**: The importance of idempotency in distributed systems, especially when dealing with non-deterministic agent behaviors.
+
+### 2. AI Agent Reliability
+**Challenge**: LLMs can be unpredictable. Ensuring agents follow strict policies and don't "hallucinate" actions in a browser environment was critical.
+**Solution**: Developed a "Policy-Driven" architecture where agent actions are validated against strict configuration files (`effort_policy.yml`, `stealth.yml`) before execution.
+**Learning**: "Trust but verify" is the golden rule of AI agents. Implementing a separate QA layer to validate agent outputs significantly increased system reliability.
+
+### 3. Vector Search Optimization
+**Challenge**: Accurately matching unstructured text data against complex, multi-dimensional profiles.
+**Solution**: Utilized Qdrant with hybrid search strategies, combining dense vector embeddings with sparse keyword matching.
+**Learning**: The nuances of embedding models (e.g., `text-embedding-3-small`) and how preprocessing text data impacts retrieval quality.
+
+---
+
+## � Setup & Installation
 
 ### Prerequisites
-- Docker & Docker Compose
-- Python 3.12
-- Git
+*   Docker & Docker Compose
+*   Python 3.12+
+*   Node.js 20+
 
-### Setup
+### Quick Start (Docker)
+
+The easiest way to explore the system is via Docker:
 
 ```bash
-# Clone repository
-git clone https://github.com/JanKonradK/Nyx_Venatrix.git
-cd Nyx_Venatrix
+# 1. Configure Environment
+cp .env.example .env
+# Edit .env and add your API keys (OPENAI_API_KEY, GROK_API_KEY)
 
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # or `.venv\Scripts\activate` on Windows
+# 2. Launch Stack
+docker compose up -d
 
-# Install dependencies
-pip install -r services/agent/requirements.txt
-playwright install chromium
+# 3. Access Services
+# Backend API: http://localhost:3000
+# Agent Service: http://localhost:8000
+# Frontend: http://localhost:5173
+```
 
-# Start database infrastructure (runs independently)
+### Local Development Setup
+
+For deep inspection and modification:
+
+```bash
+# 1. Start Infrastructure (DB, Redis, Qdrant)
 docker compose -f docker-compose.db.yml up -d
 
-# Run migrations
-python run_migrations.py
+# 2. Install Dependencies
+./scripts/dev-setup.sh
 
-# Start application services
-docker compose up -d
+# 3. Start Services Locally
+./scripts/start-local.sh
 ```
-
----
-
-## 🔧 Configuration
-
-### Environment Variables
-
-See `.env.example` for all configuration options. Key variables:
-
-```bash
-# Required
-GROK_API_KEY=your-key           # Primary LLM
-OPENAI_API_KEY=your-key         # Embeddings
-
-# Database (auto-configured for Docker)
-DATABASE_URL=postgresql://postgres:postgres@shared_postgres:5432/nyx_venatrix
-REDIS_HOST=shared_redis
-QDRANT_URI=http://shared_qdrant:6333
-
-# Optional
-LANGFUSE_SECRET_KEY=your-key    # LLM tracing
-MLF LOW_TRACKING_URI=http://...  # Experiment tracking
-```
-
-### Policy Files
-
-Configure behavior via YAML:
-- `config/effort_policy.yml` - Effort level decisions
-- `config/stealth.yml` - Rate limiting per domain
-- `config/profile.json` - User profile truth data
-
----
-
-## 📊 Usage
-
-### Run Job Application
-
-```bash
-# Test single job URL
-python cli_test_ingestion.py https://example.com/job/123
-
-# Start TUI dashboard
-python dashboard.py
-
-# Run simulation
-python simulate_workflow.py
-```
-
-### Manage Database
-
-```bash
-# Access PostgreSQL
-docker exec -it shared_postgres psql -U postgres -d nyx_venatrix
-
-# Run migrations
-python run_migrations.py
-
-# Check tables
-\dt
-SELECT COUNT(*) FROM applications;
-```
-
-### Monitoring
-
-- **MLflow UI**: http://localhost:5000 (if deployed)
-- **Langfuse**: https://cloud.langfuse.com
-- **Qdrant Dashboard**: http://localhost:6334/dashboard
-
----
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-pytest tests/ -v
-
-# Run specific suite
-pytest tests/test_qa_agent.py -v
-
-# With coverage
-pytest tests/ --cov=services/agent/src --cov-report=html
-```
-
-**Current Status**: 35/35 tests passing (100%)
-
----
-
-## 📚 Documentation
-
-- `README.md` - This file
-- `TODO.md` - Development roadmap
-- `BUGS.md` - Known issues and fixes
-- `CONTRIBUTING.md` - Contribution guidelines
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Please read `CONTRIBUTING.md` for guidelines.
 
 ---
 
 ## 📄 License
 
-MIT License - See LICENSE file for details
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+Copyright (C) 2025 Jan Konrad
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ---
 
-## 🙏 Acknowledgments
+This project is licensed under the **GNU General Public License v3.0**.
 
-- [browser-use](https://github.com/browser-use/browser-use) - Browser automation framework
-- [Ray](https://www.ray.io/) - Distributed computing
-- [MLflow](https://mlflow.org/) - Experiment tracking
-- [Langfuse](https://langfuse.com/) - LLM observability
+### What this means:
+- **For learning & evaluation**: Freely view, use, and modify this code for
+  educational purposes and portfolio review
+- **For employers**: You can evaluate this work as a demonstration of my skills
+- **For commercial use**: Not permitted without explicit permission. Any
+  commercial derivative must also be released under GPL v3
 
----
-
-## 📧 Contact
-
-**Project**: [github.com/JanKonradK/Nyx_Venatrix](https://github.com/JanKonradK/Nyx_Venatrix)
-
----
-
-**Built with ❤️ using Python, Ray, PostgreSQL, and AI**
+This license protects my work while keeping it open for legitimate review and
+learning. Make sure that this is added to the project and letting others contribute will be limited too.
